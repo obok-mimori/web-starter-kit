@@ -1,0 +1,8 @@
+border-radius()
+  color:#3ff33f
+  -webkit-border-radius arguments
+  -moz-border-radius arguments
+  border-radius arguments
+
+.sample
+  border-radius(5px)

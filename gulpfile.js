@@ -108,6 +108,39 @@ gulp.task('styles', function () {
     .pipe($.size({title: 'styles'}));
 })
 
+gulp.task('stylus', function () {
+
+  var AUTOPREFIXER_BROWSERS = [
+    'ie >= 10',
+    'ie_mob >= 10',
+    'ff >= 30',
+    'chrome >= 34',
+    'safari >= 7',
+    'opera >= 23',
+    'ios >= 7',
+    'android >= 4.4',
+    'bb >= 10'
+  ];
+
+
+
+  // For best performance, don't add Sass partials to `gulp.src`
+  return gulp.src([
+    'app/**/*.stylus'
+  ])
+    .pipe($.changed('.tmp/styles', {extension: '.css'}))
+    .pipe($.sourcemaps.init())
+    .pipe($.stylus())
+    //.pipe($.stylus({precision: 10,}).on('error', $.stylus.logError))
+    .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
+    .pipe(gulp.dest('.tmp'))
+    // Concatenate and minify styles
+    .pipe($.if('*.css', $.csso()))
+    .pipe($.sourcemaps.write())
+    .pipe(gulp.dest('dist'))
+    .pipe($.size({title: 'styles'}));
+})
+
 // Concatenate and minify JavaScript
 gulp.task('scripts', function () {
   var sources = [
@@ -159,7 +192,7 @@ gulp.task('html', function () {
 gulp.task('clean', del.bind(null, ['.tmp', 'dist/*', '!dist/.git'], {dot: true}));
 
 // Watch files for changes & reload
-gulp.task('serve', ['styles'], function () {
+gulp.task('serve', ['styles','stylus'], function () {
   browserSync({
     notify: false,
     // Customize the BrowserSync console logging prefix
@@ -172,7 +205,7 @@ gulp.task('serve', ['styles'], function () {
   });
 
   gulp.watch(['app/**/*.html'], reload);
-  gulp.watch(['app/styles/**/**/**/**/*.{scss,css}'], ['styles', reload]);
+  gulp.watch(['app/styles/**/**/**/**/*.{scss,css,stylus}'], ['styles','stylus', reload]);
   gulp.watch(['app/scripts/**/*.js'], ['jshint']);
   gulp.watch(['app/images/**/*'], reload);
 });
@@ -194,7 +227,7 @@ gulp.task('serve:dist', ['default'], function () {
 // Build production files, the default task
 gulp.task('default', ['clean'], function (cb) {
   runSequence(
-    'styles',
+    'styles','stylus',
     ['jshint', 'html', 'scripts', 'images', 'fonts', 'copy'],
     'generate-service-worker',
     cb);
